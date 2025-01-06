@@ -3,7 +3,7 @@
 
 TIMEOUT=10  # 设定超时时间为10秒
 NAMESPACE="" # 命名空间 例如 "/infantry_3" 注意要有"/"
-NODE_NAMES=("armor_detector" "armor_solver" "serial_driver" "camera_driver")  # 列出所有需要监控的节点名称，注意是用空格分隔
+NODE_NAMES=("armor_detector" "armor_solver")  # 列出所有需要监控的节点名称，注意是用空格分隔
 USER="$(whoami)" #用户名
 HOME_DIR=$(eval echo ~$USER)
 WORKING_DIR="$HOME_DIR/FYT_vision" # 代码目录
