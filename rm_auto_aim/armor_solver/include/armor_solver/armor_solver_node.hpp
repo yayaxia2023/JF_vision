@@ -61,6 +61,8 @@ private:
 
   void setModeCallback(const std::shared_ptr<rm_interfaces::srv::SetMode::Request> request,
                        std::shared_ptr<rm_interfaces::srv::SetMode::Response> response);
+
+  void TargetCallback(const rm_interfaces::msg::Target &msg);
   
   bool debug_mode_;
 
@@ -85,7 +87,9 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
   message_filters::Subscriber<rm_interfaces::msg::Armors> armors_sub_;
+  rclcpp::Subscription<rm_interfaces::msg::Target>::SharedPtr target_sub_;
   rm_interfaces::msg::Target armor_target_;
+  rm_interfaces::msg::Target another_target_;
   std::shared_ptr<tf2_filter> tf2_filter_;
 
   // Measurement publisher

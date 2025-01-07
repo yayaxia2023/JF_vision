@@ -114,6 +114,10 @@ ArmorSolverNode::ArmorSolverNode(const rclcpp::NodeOptions &options)
   tf2_buffer_->setCreateTimerInterface(timer_interface);
   tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
   // subscriber and filter
+  target_sub_ = this->create_subscription<rm_interfaces::msg::Target>(
+        "armor_solver/target", rclcpp::SystemDefaultsQoS(),
+        std::bind(&ArmorSolverNode::TargetCallback, this, std::placeholders::_1));
+
   armors_sub_.subscribe(this, "armor_detector/armors", rmw_qos_profile_sensor_data);
   target_frame_ = this->declare_parameter("target_frame", "odom");
   tf2_filter_ = std::make_shared<tf2_filter>(armors_sub_,
@@ -180,7 +184,7 @@ void ArmorSolverNode::timerCallback() {
     return;
   }
 
-  if (armor_target_.tracking) {
+  if (armor_target_.tracking && !another_target_.tracking) {
     try {
       control_msg = solver_->solve(armor_target_, this->now(), tf2_buffer_);
     } catch (...) {
@@ -190,7 +194,19 @@ void ArmorSolverNode::timerCallback() {
       control_msg.distance = -1;
       control_msg.fire_advice = false;
     }
-  } else {
+  } 
+  if (!armor_target_.tracking && another_target_.tracking) {
+    try {
+      control_msg = solver_->solve(another_target_, this->now(), tf2_buffer_);
+    } catch (...) {
+      FYT_ERROR("armor_solver", "Something went wrong in solver!");
+      control_msg.yaw_diff = 0;
+      control_msg.pitch_diff = 0;
+      control_msg.distance = -1;
+      control_msg.fire_advice = false;
+    }
+  } 
+  else {
     control_msg.yaw_diff = 0;
     control_msg.pitch_diff = 0;
     control_msg.distance = -1;
@@ -250,6 +266,38 @@ void ArmorSolverNode::initMarkers() noexcept {
   marker_pub_ =
     this->create_publisher<visualization_msgs::msg::MarkerArray>("armor_solver/marker", 10);
 }
+
+void ArmorSolverNode::TargetCallback(const rm_interfaces::msg::Target &msg)
+  {
+    const static std::map<std::string, uint8_t> id_unit8_map{
+      {"", 0},  {"outpost", 0}, {"1", 1}, {"1", 1},     {"2", 2},
+      {"3", 3}, {"4", 4},       {"5", 5}, {"guard", 6}, {"base", 7}};
+
+    rm_interfaces::msg::Target target;
+    target.tracking = msg.tracking;
+    target.id = id_unit8_map.at(msg.id);
+    target.armors_num = msg.armors_num;
+    // 三维空间中的位置
+    target.position.x = msg.position.x;
+    target.position.y = msg.position.y;
+    target.position.z = msg.position.z;
+    target.yaw = msg.yaw;
+    // 三维空间中的速度
+    target.velocity.x = msg.velocity.x;
+    target.velocity.y = msg.velocity.y;
+    target.velocity.z = msg.velocity.z;
+    target.v_yaw = msg.v_yaw;
+    target.radius_1 = msg.radius_1;
+    target.radius_2 = msg.radius_2;
+    target.d_za = msg.d_za; 
+    target.d_zc = msg.d_zc; 
+    target.yaw_diff =msg.yaw_diff;
+    target.position_diff =msg.position_diff;
+
+    RCLCPP_INFO(this->get_logger(), "target_cmd_pub_  send");
+    another_target_ = target;
+    target_pub_->publish(target);
+  }
 
 void ArmorSolverNode::armorsCallback(const rm_interfaces::msg::Armors::SharedPtr armors_msg) {
   // Lazy initialize solver owing to weak_from_this() can't be called in constructor
@@ -331,7 +379,7 @@ void ArmorSolverNode::armorsCallback(const rm_interfaces::msg::Armors::SharedPtr
   }
 
   // Store and Publish the target_msg
-  armor_target_ = target_msg;
+  armor_target_ = target_msg; 
   target_pub_->publish(target_msg);
 
   last_time_ = time;
@@ -349,7 +397,6 @@ void ArmorSolverNode::publishMarkers(const rm_interfaces::msg::Target &target_ms
   visualization_msgs::msg::MarkerArray marker_array;
 
   if (target_msg.tracking) {
-    std::cout<<target_msg.tracking<<std::endl;
     double yaw = target_msg.yaw, r1 = target_msg.radius_1, r2 = target_msg.radius_2;
     double xc = target_msg.position.x, yc = target_msg.position.y, zc = target_msg.position.z;
     double vx = target_msg.velocity.x, vy = target_msg.velocity.y, vz = target_msg.velocity.z;
