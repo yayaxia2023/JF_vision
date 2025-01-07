@@ -184,7 +184,7 @@ void ArmorSolverNode::timerCallback() {
     return;
   }
 
-  if (armor_target_.tracking && !another_target_.tracking) {
+  if (armor_target_.tracking) {
     try {
       control_msg = solver_->solve(armor_target_, this->now(), tf2_buffer_);
     } catch (...) {
@@ -195,7 +195,7 @@ void ArmorSolverNode::timerCallback() {
       control_msg.fire_advice = false;
     }
   } 
-  if (!armor_target_.tracking && another_target_.tracking) {
+  else if (another_target_.tracking) {
     try {
       control_msg = solver_->solve(another_target_, this->now(), tf2_buffer_);
     } catch (...) {
