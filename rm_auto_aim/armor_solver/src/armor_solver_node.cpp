@@ -115,7 +115,7 @@ ArmorSolverNode::ArmorSolverNode(const rclcpp::NodeOptions &options)
   tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
   // subscriber and filter
   target_sub_ = this->create_subscription<rm_interfaces::msg::Target>(
-        "armor_solver/target", rclcpp::SystemDefaultsQoS(),
+        "another_target", rclcpp::SystemDefaultsQoS(),
         std::bind(&ArmorSolverNode::TargetCallback, this, std::placeholders::_1));
 
   armors_sub_.subscribe(this, "armor_detector/armors", rmw_qos_profile_sensor_data);
@@ -144,6 +144,7 @@ ArmorSolverNode::ArmorSolverNode(const rclcpp::NodeOptions &options)
   pub_timer_ = this->create_wall_timer(std::chrono::milliseconds(4),
                                        std::bind(&ArmorSolverNode::timerCallback, this));
   armor_target_.header.frame_id = "";
+  another_target_.tracking=0;
 
   // Enable/Disable Armor Solver
   enable_ = true;
@@ -183,28 +184,28 @@ void ArmorSolverNode::timerCallback() {
     gimbal_pub_->publish(control_msg);
     return;
   }
-
+/*
   if (armor_target_.tracking) {
-    try {
+    // try {
       control_msg = solver_->solve(armor_target_, this->now(), tf2_buffer_);
-    } catch (...) {
-      FYT_ERROR("armor_solver", "Something went wrong in solver!");
-      control_msg.yaw_diff = 0;
-      control_msg.pitch_diff = 0;
-      control_msg.distance = -1;
-      control_msg.fire_advice = false;
-    }
+    // } catch (...) {
+    //   FYT_ERROR("armor_solver", "Something went wrong in solver!");
+      // control_msg.yaw_diff = 0;
+      // control_msg.pitch_diff = 0;
+      // control_msg.distance = -1;
+      // control_msg.fire_advice = false;
+    // }
   } 
   else if (another_target_.tracking) {
-    try {
+    // try {
       control_msg = solver_->solve(another_target_, this->now(), tf2_buffer_);
-    } catch (...) {
-      FYT_ERROR("armor_solver", "Something went wrong in solver!");
-      control_msg.yaw_diff = 0;
-      control_msg.pitch_diff = 0;
-      control_msg.distance = -1;
-      control_msg.fire_advice = false;
-    }
+    // } catch (...) {
+    //   FYT_ERROR("armor_solver", "Something went wrong in solver!");
+    //   control_msg.yaw_diff = 0;
+    //   control_msg.pitch_diff = 0;
+    //   control_msg.distance = -1;
+    //   control_msg.fire_advice = false;
+    // }
   } 
   else {
     control_msg.yaw_diff = 0;
@@ -213,6 +214,43 @@ void ArmorSolverNode::timerCallback() {
     control_msg.fire_advice = false;
   }
   gimbal_pub_->publish(control_msg);
+*/
+
+  try {
+      // 判断目标状态并解决
+      
+      if (armor_target_.tracking) {
+          std::cout<<"armor_target is tracking"<<std::endl;
+          control_msg = solver_->solve(armor_target_, this->now(), tf2_buffer_);
+      } else if (another_target_.tracking) {
+          control_msg = solver_->solve(another_target_, this->now(), tf2_buffer_);
+          std::cout<<"another_target is tracking"<<std::endl;
+      } else {
+          // 无目标时的默认值
+          control_msg.yaw_diff = 0;
+          control_msg.pitch_diff = 0;
+          control_msg.distance = -1;
+          control_msg.fire_advice = false;
+      }
+  } catch (const std::exception& e) {
+      // 捕获并记录具体异常信息
+      FYT_ERROR("armor_solver", "Solver encountered an error: {}", e.what());
+      control_msg.yaw_diff = 0;
+      control_msg.pitch_diff = 0;
+      control_msg.distance = -1;
+      control_msg.fire_advice = false;
+  } catch (...) {
+      // 捕获其他未知异常
+      FYT_ERROR("armor_solver", "An unknown error occurred in solver!");
+      control_msg.yaw_diff = 0;
+      control_msg.pitch_diff = 0;
+      control_msg.distance = -1;
+      control_msg.fire_advice = false;
+  }
+  
+  // 发布控制消息
+  gimbal_pub_->publish(control_msg);
+
 
   if (debug_mode_) {
     publishMarkers(armor_target_, control_msg);

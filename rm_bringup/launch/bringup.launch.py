@@ -189,7 +189,8 @@ def generate_launch_description():
         # delay_serial_node,
         delay_cam_detector_node,
         delay_armor_solver_node,
-        robotrts]
+        # robotrts
+        ]
     
     if launch_params['rune']:
         launch_description_list.append(delay_rune_solver_node)
