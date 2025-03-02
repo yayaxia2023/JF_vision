@@ -497,7 +497,7 @@ void ArmorSolverNode::publishMarkers(const rm_interfaces::msg::Target &target_ms
 
     trajectory_marker_.action = visualization_msgs::msg::Marker::ADD;
     trajectory_marker_.points.clear();
-    trajectory_marker_.header.frame_id = "gimbal_link";
+    trajectory_marker_.header.frame_id = "aim_link";
     for (const auto &point : solver_->getTrajectory()) {
       geometry_msgs::msg::Point p;
       p.x = point.first;

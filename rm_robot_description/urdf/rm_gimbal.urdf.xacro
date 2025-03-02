@@ -8,18 +8,18 @@
 
   <link name="odom" />
 
-  <link name="gimbal_link" />
+  <link name="aim_link" />
 
   <joint name="gimbal_joint" type="floating">
     <parent link="odom" />
-    <child link="gimbal_link" />
+    <child link="aim_link" />
   </joint>
 
   <link name="camera_link" />
 
   <joint name="camera_joint" type="fixed">
     <origin xyz="$(arg xyz)" rpy="$(arg rpy)" />
-    <parent link="gimbal_link" />
+    <parent link="aim_link" />
     <child link="camera_link" />
     <axis xyz="0 0 0" />
   </joint>

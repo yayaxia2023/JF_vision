@@ -75,7 +75,7 @@ rm_interfaces::msg::GimbalCmd Solver::solve(const rm_interfaces::msg::Target &ta
   // Get current roll, yaw and pitch of gimbal
   try {
     auto gimbal_tf =
-      tf2_buffer_->lookupTransform(target.header.frame_id, "gimbal_link", tf2::TimePointZero);
+      tf2_buffer_->lookupTransform(target.header.frame_id, "aim_link", tf2::TimePointZero);
     auto msg_q = gimbal_tf.transform.rotation;
 
     tf2::Quaternion tf_q;

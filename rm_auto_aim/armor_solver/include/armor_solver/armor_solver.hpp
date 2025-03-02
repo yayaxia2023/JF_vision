@@ -42,7 +42,7 @@ public:
   ~Solver() = default;
 
   // Solve the gimbal command from tracked target
-  // Throw: tf2::TransformException if the transform from "odom" to "gimbal_link" is not available
+  // Throw: tf2::TransformException if the transform from "odom" to "aim_link" is not available
   rm_interfaces::msg::GimbalCmd solve(const rm_interfaces::msg::Target &target_msg,
                                       const rclcpp::Time &current_time,
                                       std::shared_ptr<tf2_ros::Buffer> tf2_buffer_);
