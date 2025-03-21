@@ -114,9 +114,9 @@ ArmorSolverNode::ArmorSolverNode(const rclcpp::NodeOptions &options)
   tf2_buffer_->setCreateTimerInterface(timer_interface);
   tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
   // subscriber and filter
-  target_sub_ = this->create_subscription<rm_interfaces::msg::Target>(
-        "another_target", rclcpp::SystemDefaultsQoS(),
-        std::bind(&ArmorSolverNode::TargetCallback, this, std::placeholders::_1));
+  // target_sub_ = this->create_subscription<rm_interfaces::msg::Target>(
+  //       "another_target", rclcpp::SystemDefaultsQoS(),
+  //       std::bind(&ArmorSolverNode::TargetCallback, this, std::placeholders::_1));
 
   armors_sub_.subscribe(this, "armor_detector/armors", rmw_qos_profile_sensor_data);
   target_frame_ = this->declare_parameter("target_frame", "odom");
@@ -220,7 +220,7 @@ void ArmorSolverNode::timerCallback() {
       // 判断目标状态并解决
       
       if (armor_target_.tracking) {
-          std::cout<<"armor_target is tracking"<<std::endl;
+          // std::cout<<"armor_target is tracking"<<std::endl;
           control_msg = solver_->solve(armor_target_, this->now(), tf2_buffer_);
       } else if (another_target_.tracking) {
           control_msg = solver_->solve(another_target_, this->now(), tf2_buffer_);

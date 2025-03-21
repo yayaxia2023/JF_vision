@@ -32,6 +32,7 @@
 // project
 #include "armor_detector/types.hpp"
 #include "rm_utils/common.hpp"
+#include "rm_utils/logger/log.hpp"
 
 namespace fyt::auto_aim {
 Detector::Detector(const int &bin_thres,

@@ -222,6 +222,17 @@ std::unique_ptr<Detector> ArmorDetectorNode::initDetector() {
   param_desc.integer_range[0].to_value = 255;
   int binary_thres = declare_parameter("binary_thres", 160, param_desc);
 
+  // 通过参数获取敌方颜色
+  int enemy_color_int = declare_parameter("detect_color", 0);
+
+  // 解析颜色参数
+  EnemyColor enemy_color = EnemyColor::BLUE; // 默认值
+  if (enemy_color_int == 1) {
+    enemy_color = EnemyColor::BLUE;
+  } else if (enemy_color_int == 0) {
+    enemy_color = EnemyColor::RED;
+  }
+
   Detector::LightParams l_params = {
       .min_ratio = declare_parameter("light.min_ratio", 0.08),
       .max_ratio = declare_parameter("light.max_ratio", 0.4),
@@ -241,8 +252,7 @@ std::unique_ptr<Detector> ArmorDetectorNode::initDetector() {
           declare_parameter("armor.max_large_center_distance", 5.0),
       .max_angle = declare_parameter("armor.max_angle", 35.0)};
 
-  auto detector = std::make_unique<Detector>(binary_thres, EnemyColor::RED,
-                                             l_params, a_params);
+  auto detector = std::make_unique<Detector>(binary_thres, enemy_color, l_params, a_params);
 
   // Init classifier
   namespace fs = std::filesystem;

@@ -6,7 +6,7 @@ NAMESPACE="" # 命名空间 例如 "/infantry_3" 注意要有"/"
 NODE_NAMES=("armor_detector" "armor_solver")  # 列出所有需要监控的节点名称，注意是用空格分隔
 USER="$(whoami)" #用户名
 HOME_DIR=$(eval echo ~$USER)
-WORKING_DIR="$HOME_DIR/FYT_vision" # 代码目录
+WORKING_DIR="$HOME_DIR/JF_ws" # 代码目录
 LAUNCH_FILE="rm_bringup bringup.launch.py" # launch 文件
 OUTPUT_FILE="$WORKING_DIR/screen.output" # 终端输出记录文件
 
@@ -16,6 +16,7 @@ export RMW_IMPLEMENTATION="$rmw" # RMW实现
 export ROS_HOSTNAME=$(hostname)
 export ROS_HOME=${ROS_HOME:=$HOME_DIR/.ros}
 export ROS_LOG_DIR="/tmp"
+export ROS_DOMAIN_ID=2
 
 source /opt/ros/humble/setup.bash
 source $WORKING_DIR/install/setup.bash
