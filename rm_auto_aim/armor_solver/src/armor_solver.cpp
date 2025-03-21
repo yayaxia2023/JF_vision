@@ -24,6 +24,7 @@
 #include "rm_utils/logger/log.hpp"
 #include "rm_utils/math/utils.hpp"
 
+
 namespace fyt::auto_aim {
 Solver::Solver(std::weak_ptr<rclcpp::Node> n) : node_(n) {
   auto node = node_.lock();
@@ -44,6 +45,7 @@ Solver::Solver(std::weak_ptr<rclcpp::Node> n) : node_(n) {
   trajectory_compensator_->resistance = node->declare_parameter("solver.resistance", 0.001);
 
   manual_compensator_ = std::make_unique<ManualCompensator>();
+  low_pass_filter = std::make_unique<LowPassFilter>(0.1);
   auto angle_offset = node->declare_parameter("solver.angle_offset", std::vector<std::string>{});
   if(!manual_compensator_->updateMapFlow(angle_offset)) {
     FYT_WARN("armor_solver", "Manual compensator update failed!");
@@ -182,7 +184,9 @@ rm_interfaces::msg::GimbalCmd Solver::solve(const rm_interfaces::msg::Target &ta
   gimbal_cmd.pitch = cmd_pitch * 180 / M_PI;  
   gimbal_cmd.yaw_diff = (cmd_yaw - rpy_[2]) * 180 / M_PI;
   gimbal_cmd.pitch_diff = (cmd_pitch - rpy_[1]) * 180 / M_PI;
-
+  low_pass_filter->update(gimbal_cmd.yaw,gimbal_cmd.pitch);
+  gimbal_cmd.yaw = low_pass_filter->getFilteredYaw();
+  gimbal_cmd.pitch = low_pass_filter->getFilteredPitch();
   if (gimbal_cmd.fire_advice) {
     FYT_DEBUG("armor_solver", "You Need Fire!");
   }
@@ -300,6 +304,9 @@ std::vector<std::pair<double, double>> Solver::getTrajectory() const noexcept {
     p.second = -x * sin(rpy_[1]) + y * cos(rpy_[1]);
   }
   return trajectory;
+}
+void Solver::set_interrupted(){
+  low_pass_filter->setInterrupted(1);
 }
 
 }  // namespace fyt::auto_aim

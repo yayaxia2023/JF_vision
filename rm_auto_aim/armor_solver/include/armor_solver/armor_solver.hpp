@@ -32,7 +32,7 @@
 #include "rm_interfaces/msg/target.hpp"
 #include "rm_utils/math/trajectory_compensator.hpp"
 #include "rm_utils/math/manual_compensator.hpp"
-
+#include "armor_solver/low_pass_filter.hpp"
 namespace fyt::auto_aim {
 // Solver class used to solve the gimbal command from tracked target
 class Solver {
@@ -50,7 +50,7 @@ public:
   enum State { TRACKING_ARMOR = 0, TRACKING_CENTER = 1 } state;
 
   std::vector<std::pair<double, double>> getTrajectory() const noexcept; 
-
+  void set_interrupted();
 private:
   // Get the armor positions from the target robot
   std::vector<Eigen::Vector3d> getArmorPositions(const Eigen::Vector3d &target_center,
@@ -82,6 +82,7 @@ private:
 
   std::unique_ptr<TrajectoryCompensator> trajectory_compensator_;
   std::unique_ptr<ManualCompensator> manual_compensator_;
+  std::unique_ptr<LowPassFilter> low_pass_filter;
 
   std::array<double, 3> rpy_;
 

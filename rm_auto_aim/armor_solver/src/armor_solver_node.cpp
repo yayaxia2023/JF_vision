@@ -182,6 +182,7 @@ void ArmorSolverNode::timerCallback() {
     control_msg.yaw = 0;
     control_msg.fire_advice = false;
     gimbal_pub_->publish(control_msg);
+    solver_->set_interrupted();
     return;
   }
 /*
