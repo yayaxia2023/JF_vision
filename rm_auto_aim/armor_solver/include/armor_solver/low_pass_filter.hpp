@@ -19,7 +19,6 @@ public:
             yaw_filtered = new_yaw;
             pitch_filtered = new_pitch;
             interrupted = false; // 自动退出中断状态
-            std::cout << "[INFO] 中断恢复：已自动同步当前值。\n";
         } else {
             // 正常滤波
             yaw_filtered = alpha * new_yaw + (1.0f - alpha) * yaw_filtered;

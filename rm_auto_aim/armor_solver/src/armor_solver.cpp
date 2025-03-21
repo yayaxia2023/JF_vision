@@ -43,9 +43,9 @@ Solver::Solver(std::weak_ptr<rclcpp::Node> n) : node_(n) {
   trajectory_compensator_->velocity = node->declare_parameter("solver.bullet_speed", 20.0);
   trajectory_compensator_->gravity = node->declare_parameter("solver.gravity", 9.8);
   trajectory_compensator_->resistance = node->declare_parameter("solver.resistance", 0.001);
-
+  float alpha = node->declare_parameter("filter.alpha", 0.1);
   manual_compensator_ = std::make_unique<ManualCompensator>();
-  low_pass_filter = std::make_unique<LowPassFilter>(0.1);
+  low_pass_filter = std::make_unique<LowPassFilter>(alpha);
   auto angle_offset = node->declare_parameter("solver.angle_offset", std::vector<std::string>{});
   if(!manual_compensator_->updateMapFlow(angle_offset)) {
     FYT_WARN("armor_solver", "Manual compensator update failed!");

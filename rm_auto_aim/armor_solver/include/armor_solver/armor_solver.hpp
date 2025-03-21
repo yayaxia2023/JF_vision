@@ -99,6 +99,7 @@ private:
   double side_angle_;
   double min_switching_v_yaw_;
 
+  float alpha;
   std::weak_ptr<rclcpp::Node> node_;
 };
 }  // namespace fyt::auto_aim
